@@ -1,5 +1,5 @@
 import 'package:device_preview_plus/device_preview_plus.dart';
-import 'package:fast_food_app/presentation/pages/home_screen.dart';
+import 'package:fast_food_app/presentation/screens/home_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 

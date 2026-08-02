@@ -1,6 +1,7 @@
 import 'package:fast_food_app/data/repositories/auth_repository_impl.dart';
 import 'package:fast_food_app/domain/exceptions/auth_exception.dart';
 import 'package:fast_food_app/domain/repositories/auth_repository.dart';
+import 'package:fast_food_app/presentation/screens/home_screen.dart';
 import 'package:fast_food_app/presentation/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -48,10 +49,8 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
       if (!mounted) return;
-      // TODO: navegar para o ecrã principal (restaurantes perto de ti)
-      // assim que existir, em vez desta mensagem.
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login efetuado com sucesso!')),
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
