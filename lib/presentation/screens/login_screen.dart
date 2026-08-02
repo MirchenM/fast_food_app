@@ -1,6 +1,7 @@
 import 'package:fast_food_app/data/repositories/auth_repository_impl.dart';
 import 'package:fast_food_app/domain/exceptions/auth_exception.dart';
 import 'package:fast_food_app/domain/repositories/auth_repository.dart';
+import 'package:fast_food_app/presentation/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
