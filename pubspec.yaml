@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   device_preview_plus: ^2.4.7
+  google_maps_flutter: ^2.5.0
+  geolocator: ^14.0.2
 
 dev_dependencies:
   flutter_test:

@@ -3,6 +3,8 @@ import 'package:fast_food_app/data/repositories/restaurant_repository_impl.dart'
 import 'package:fast_food_app/domain/entities/restaurant.dart';
 import 'package:fast_food_app/domain/repositories/restaurant_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 /// Centro por omissão (Maputo) caso a localização não esteja disponível.
 const _localizacaoOmissao = LatLng(-25.9692, 32.5732);
