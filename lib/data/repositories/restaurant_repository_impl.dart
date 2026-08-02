@@ -1,5 +1,5 @@
-import '../../domain/entities/restaurante.dart';
-import '../../domain/repositories/restaurante_repository.dart';
+
+import 'package:fast_food_app/domain/entities/restaurant.dart';
 
 /// Implementação mock — lista fixa de restaurantes de exemplo em
 /// Maputo, só para termos algo no mapa enquanto não há uma fonte real.
