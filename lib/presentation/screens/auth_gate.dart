@@ -1,3 +1,4 @@
+import 'package:fast_food_app/data/repositories/firebase_auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
