@@ -1,10 +1,14 @@
-
 import 'package:fast_food_app/data/repositories/restaurant_repository_impl.dart';
 import 'package:fast_food_app/domain/entities/restaurant.dart';
 import 'package:fast_food_app/domain/repositories/restaurant_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+
+/// Muda para `true` quando tiveres o Google Maps configurado (API key
+/// na Web em web/index.html e/ou no AndroidManifest.xml).
+const bool _mapaAtivo = false;
 
 /// Centro por omissão (Maputo) caso a localização não esteja disponível.
 const _localizacaoOmissao = LatLng(-25.9692, 32.5732);
@@ -47,13 +51,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final posicao = await _obterLocalizacaoAtual();
+      final posicao = _mapaAtivo ? await _obterLocalizacaoAtual() : null;
       final restaurantes = await _restauranteRepository.listarRestaurantes();
 
       setState(() {
         _posicaoAtual = posicao;
         _restaurantes = restaurantes;
-        if (posicao == null) {
+        if (_mapaAtivo && posicao == null) {
           _erro = 'Não foi possível obter a tua localização.';
         }
       });
@@ -123,13 +127,33 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(title: const Text('Perto de ti')),
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(target: centro, zoom: 14),
-            markers: _marcadores,
-            myLocationEnabled: _posicaoAtual != null,
-            myLocationButtonEnabled: _posicaoAtual != null,
-            onMapCreated: (controller) => _mapController = controller,
-          ),
+          if (_mapaAtivo)
+            GoogleMap(
+              initialCameraPosition: CameraPosition(target: centro, zoom: 14),
+              markers: _marcadores,
+              myLocationEnabled: _posicaoAtual != null,
+              myLocationButtonEnabled: _posicaoAtual != null,
+              onMapCreated: (controller) => _mapController = controller,
+            )
+          else
+            Container(
+              color: Colors.grey.shade200,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.map_outlined, size: 48, color: Colors.grey.shade500),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Mapa por configurar.\nMuda _mapaAtivo para true quando'
+                        ' tiveres a API key.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
           if (_erro != null)
             Positioned(
               top: 12,
@@ -148,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           DraggableScrollableSheet(
-            initialChildSize: 0.28,
+            initialChildSize: _mapaAtivo ? 0.28 : 0.6,
             minChildSize: 0.14,
             maxChildSize: 0.7,
             builder: (context, scrollController) {
@@ -181,14 +205,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       restaurante: r,
                       distanciaKm: _distanciaKm(r),
                       onTap: () {
-                        // TODO: navegar para o ecrã de menu do restaurante
-                        // assim que existir.
-                        _mapController?.animateCamera(
-                          CameraUpdate.newLatLngZoom(
-                            LatLng(r.latitude, r.longitude),
-                            16,
-                          ),
-                        );
+                        if (_mapaAtivo) {
+                          _mapController?.animateCamera(
+                            CameraUpdate.newLatLngZoom(
+                              LatLng(r.latitude, r.longitude),
+                              16,
+                            ),
+                          );
+                        }
                       },
                     );
                   },
@@ -223,23 +247,27 @@ class _RestauranteCard extends StatelessWidget {
       ),
       title: Text(restaurante.nome),
       subtitle: Text(restaurante.categorias.join(', ')),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
-              const SizedBox(width: 2),
-              Text(restaurante.avaliacao.toStringAsFixed(1)),
-            ],
-          ),
-          if (distanciaKm != null)
-            Text(
-              '${distanciaKm!.toStringAsFixed(1)} km',
-              style: Theme.of(context).textTheme.bodySmall,
+      trailing: SizedBox(
+        width: 64,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
+                const SizedBox(width: 2),
+                Text(restaurante.avaliacao.toStringAsFixed(1)),
+              ],
             ),
-        ],
+            if (distanciaKm != null)
+              Text(
+                '${distanciaKm!.toStringAsFixed(1)} km',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+          ],
+        ),
       ),
     );
   }
