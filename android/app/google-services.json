@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "523961680931",
+    "project_id": "faste-food-b70cf",
+    "storage_bucket": "faste-food-b70cf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523961680931:android:adfcac4738e2c4ca82dd96",
+        "android_client_info": {
+          "package_name": "com.example.fast_food_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDE-C8S3l4RQxbDn4Auu_XehtKeC5v1r8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
