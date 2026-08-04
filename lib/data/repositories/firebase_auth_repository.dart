@@ -30,6 +30,7 @@ class FirebaseAuthRepository implements AuthRepository {
       );
       return _paraUsuario(credencial.user!);
     } on fb.FirebaseAuthException catch (e) {
+      print('Firebase code: ${e.code} | message: ${e.message}'); // TEMPORÁRIO
       throw AuthException(_mensagemDeErro(e.code));
     }
   }
@@ -50,6 +51,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
       return Usuario(id: credencial.user!.uid, nome: nome, email: email, telefone: telefone);
     } on fb.FirebaseAuthException catch (e) {
+      print('Firebase code: ${e.code} | message: ${e.message}'); // TEMPORÁRIO
       throw AuthException(_mensagemDeErro(e.code));
     }
   }
