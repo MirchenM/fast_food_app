@@ -61,12 +61,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Conta criada com sucesso!')),
       );
-    } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint('Erro inesperado: $e');
+      debugPrint('$stackTrace');
       setState(() => _errorMessage = 'Ocorreu um erro. Tenta novamente.');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
