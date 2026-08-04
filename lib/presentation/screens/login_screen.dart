@@ -52,12 +52,10 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
-    } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint('Erro inesperado: $e');
+      debugPrint('$stackTrace');
       setState(() => _errorMessage = 'Ocorreu um erro. Tenta novamente.');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
