@@ -1,6 +1,7 @@
 import 'package:fast_food_app/data/repositories/auth_repository_impl.dart';
 import 'package:fast_food_app/domain/exceptions/auth_exception.dart';
 import 'package:fast_food_app/domain/repositories/auth_repository.dart';
+import 'package:fast_food_app/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -55,11 +56,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             : _telefoneController.text.trim(),
       );
       if (!mounted) return;
-      // Volta ao login. Quando o ecrã principal existir, pode passar
-      // a navegar diretamente para lá em vez de fazer "pop".
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Conta criada com sucesso!')),
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
       );
     } catch (e, stackTrace) {
       debugPrint('Erro inesperado: $e');

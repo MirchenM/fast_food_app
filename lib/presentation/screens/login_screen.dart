@@ -160,24 +160,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         : const Text('Entrar'),
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Ainda não tens conta?'),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => SignUpScreen(
-                                authRepository: _authRepository,
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text('Criar conta'),
-                      ),
-                    ],
-                  ),
+    Column(
+    children: [
+    const Text('Ainda não tens conta?'),
+    TextButton(
+    onPressed: () {
+    Navigator.of(context).push(
+    MaterialPageRoute(
+    builder: (_) => SignUpScreen(
+    authRepository: _authRepository,
+    ),
+    ),
+    );
+    },
+    child: const Text('Criar conta'),
+    ),
+    ],
+    ),
                   const SizedBox(height: 24),
                 ],
               ),
