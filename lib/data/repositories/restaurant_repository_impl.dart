@@ -1,9 +1,11 @@
 
+
 import 'package:fast_food_app/domain/entities/restaurant.dart';
 import 'package:fast_food_app/domain/repositories/restaurant_repository.dart';
 
 /// Implementação mock — lista fixa de restaurantes de exemplo em
-/// Maputo, só para termos algo no mapa enquanto não há uma fonte real.
+/// Maputo, só para termos algo no mapa/lista enquanto não há uma
+/// fonte real.
 class RestauranteRepositoryImpl implements RestauranteRepository {
   @override
   Future<List<Restaurante>> listarRestaurantes() async {
@@ -17,6 +19,7 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
         latitude: -25.9655,
         longitude: 32.5892,
         avaliacao: 4.3,
+        precoMedio: 250,
         categorias: ['Frango'],
       ),
       Restaurante(
@@ -26,6 +29,7 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
         latitude: -25.9689,
         longitude: 32.5808,
         avaliacao: 4.5,
+        precoMedio: 300,
         categorias: ['Hambúrgueres'],
       ),
       Restaurante(
@@ -35,6 +39,7 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
         latitude: -25.9720,
         longitude: 32.5934,
         avaliacao: 4.0,
+        precoMedio: 400,
         categorias: ['Pizza'],
       ),
       Restaurante(
@@ -44,7 +49,8 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
         latitude: -25.9598,
         longitude: 32.5735,
         avaliacao: 3.9,
-        categorias: ['Grelhados'],
+        precoMedio: 200,
+        categorias: ['Grelhados', 'Pregos'],
       ),
     ];
   }
