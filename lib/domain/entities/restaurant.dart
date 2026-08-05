@@ -6,6 +6,7 @@ class Restaurante {
   final double latitude;
   final double longitude;
   final double avaliacao; // 0 a 5
+  final double precoMedio; // preço médio, em Meticais (MT)
   final String? imagemUrl;
   final List<String> categorias; // ex: ['Hambúrgueres', 'Frango']
 
@@ -16,6 +17,7 @@ class Restaurante {
     required this.latitude,
     required this.longitude,
     this.avaliacao = 0,
+    this.precoMedio = 0,
     this.imagemUrl,
     this.categorias = const [],
   });
