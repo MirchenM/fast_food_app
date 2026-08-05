@@ -1,13 +1,15 @@
 import 'package:fast_food_app/data/repositories/restaurant_repository_impl.dart';
 import 'package:fast_food_app/domain/entities/restaurant.dart';
 import 'package:fast_food_app/domain/repositories/restaurant_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 /// Muda para `true` quando tiveres o Google Maps configurado (API key
-/// na Web em web/index.html e/ou no AndroidManifest.xml).
+/// na Web em web/index.html e/ou no AndroidManifest.xml). A localização
+/// em si (GPS) não depende disto — só o widget do mapa depende.
 const bool _mapaAtivo = false;
 
 /// Centro por omissão (Maputo) caso a localização não esteja disponível.
@@ -26,9 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
   late final RestauranteRepository _restauranteRepository =
       widget.restauranteRepository ?? RestauranteRepositoryImpl();
 
+  final _searchController = TextEditingController();
+
   GoogleMapController? _mapController;
   Position? _posicaoAtual;
   List<Restaurante> _restaurantes = [];
+  String _pesquisa = '';
   bool _isLoading = true;
   String? _erro;
 
@@ -41,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _mapController?.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -51,13 +57,16 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final posicao = _mapaAtivo ? await _obterLocalizacaoAtual() : null;
+      // A localização usa o GPS do aparelho (via Geolocator) — não
+      // depende da API do Google Maps nem de faturação, por isso
+      // funciona mesmo com _mapaAtivo a false.
+      final posicao = await _obterLocalizacaoAtual();
       final restaurantes = await _restauranteRepository.listarRestaurantes();
 
       setState(() {
         _posicaoAtual = posicao;
         _restaurantes = restaurantes;
-        if (_mapaAtivo && posicao == null) {
+        if (posicao == null) {
           _erro = 'Não foi possível obter a tua localização.';
         }
       });
@@ -97,14 +106,31 @@ class _HomeScreenState extends State<HomeScreen> {
     return metros / 1000;
   }
 
+  List<Restaurante> get _restaurantesFiltrados {
+    if (_pesquisa.trim().isEmpty) return _restaurantes;
+    final query = _pesquisa.trim().toLowerCase();
+    return _restaurantes.where((r) {
+      final nomeMatch = r.nome.toLowerCase().contains(query);
+      final categoriaMatch =
+      r.categorias.any((c) => c.toLowerCase().contains(query));
+      return nomeMatch || categoriaMatch;
+    }).toList();
+  }
+
   Set<Marker> get _marcadores {
-    return _restaurantes.map((r) {
+    return _restaurantesFiltrados.map((r) {
       return Marker(
         markerId: MarkerId(r.id),
         position: LatLng(r.latitude, r.longitude),
         infoWindow: InfoWindow(title: r.nome, snippet: r.categorias.join(', ')),
       );
     }).toSet();
+  }
+
+  String get _saudacao {
+    final nome = FirebaseAuth.instance.currentUser?.displayName;
+    if (nome == null || nome.trim().isEmpty) return 'Perto de ti';
+    return 'Olá, ${nome.trim().split(' ').first}!';
   }
 
   @override
@@ -117,14 +143,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ? LatLng(_posicaoAtual!.latitude, _posicaoAtual!.longitude)
         : _localizacaoOmissao;
 
-    final restaurantesOrdenados = [..._restaurantes]..sort((a, b) {
+    final restaurantesOrdenados = [..._restaurantesFiltrados]..sort((a, b) {
       final da = _distanciaKm(a) ?? double.infinity;
       final db = _distanciaKm(b) ?? double.infinity;
       return da.compareTo(db);
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Perto de ti')),
+      appBar: AppBar(title: Text(_saudacao)),
       body: Stack(
         children: [
           if (_mapaAtivo)
@@ -139,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               color: Colors.grey.shade200,
               alignment: Alignment.center,
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(24, 90, 24, 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -154,27 +180,64 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+
+          // Barra de pesquisa flutuante.
+          Positioned(
+            top: 12,
+            left: 12,
+            right: 12,
+            child: Material(
+              elevation: 3,
+              borderRadius: BorderRadius.circular(14),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (valor) => setState(() => _pesquisa = valor),
+                decoration: InputDecoration(
+                  hintText: 'Hambúrguer, pizza, prego...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _pesquisa.isEmpty
+                      ? null
+                      : IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _pesquisa = '');
+                    },
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           if (_erro != null)
             Positioned(
-              top: 12,
+              top: 68,
               left: 12,
               right: 12,
               child: Material(
                 color: Colors.orange.shade50,
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   child: Text(
                     '$_erro A mostrar Maputo por omissão.',
-                    style: TextStyle(color: Colors.orange.shade900),
+                    style: TextStyle(color: Colors.orange.shade900, fontSize: 13),
                   ),
                 ),
               ),
             ),
+
           DraggableScrollableSheet(
-            initialChildSize: _mapaAtivo ? 0.28 : 0.6,
-            minChildSize: 0.14,
-            maxChildSize: 0.7,
+            initialChildSize: _mapaAtivo ? 0.32 : 0.62,
+            minChildSize: 0.16,
+            maxChildSize: 0.75,
             builder: (context, scrollController) {
               return Container(
                 decoration: const BoxDecoration(
@@ -182,29 +245,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 12)],
                 ),
-                child: ListView.builder(
+                child: restaurantesOrdenados.isEmpty
+                    ? ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    _puxador(),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: Text('Nenhum restaurante encontrado.'),
+                      ),
+                    ),
+                  ],
+                )
+                    : ListView.builder(
                   controller: scrollController,
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: restaurantesOrdenados.length + 1,
                   itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return Center(
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      );
-                    }
+                    if (index == 0) return _puxador();
                     final r = restaurantesOrdenados[index - 1];
                     return _RestauranteCard(
                       restaurante: r,
                       distanciaKm: _distanciaKm(r),
                       onTap: () {
+                        // TODO: navegar para o ecrã de menu do
+                        // restaurante assim que existir.
                         if (_mapaAtivo) {
                           _mapController?.animateCamera(
                             CameraUpdate.newLatLngZoom(
@@ -224,6 +291,20 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget _puxador() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
 }
 
 class _RestauranteCard extends StatelessWidget {
@@ -239,34 +320,91 @@ class _RestauranteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return InkWell(
       onTap: onTap,
-      leading: CircleAvatar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.fastfood_rounded, color: Colors.white),
-      ),
-      title: Text(restaurante.nome),
-      subtitle: Text(restaurante.categorias.join(', ')),
-      trailing: SizedBox(
-        width: 64,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
-                const SizedBox(width: 2),
-                Text(restaurante.avaliacao.toStringAsFixed(1)),
-              ],
+            CircleAvatar(
+              radius: 26,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: const Icon(Icons.fastfood_rounded, color: Colors.white),
             ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    restaurante.nome,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontSize: 16),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: restaurante.categorias
+                        .map((c) => _CategoriaChip(texto: c))
+                        .toList(),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, size: 15, color: Colors.amber),
+                      const SizedBox(width: 2),
+                      Text(
+                        restaurante.avaliacao.toStringAsFixed(1),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        '~${restaurante.precoMedio.toStringAsFixed(0)} MT',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
             if (distanciaKm != null)
               Text(
                 '${distanciaKm!.toStringAsFixed(1)} km',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoriaChip extends StatelessWidget {
+  final String texto;
+
+  const _CategoriaChip({required this.texto});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        texto,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.secondary,
         ),
       ),
     );
