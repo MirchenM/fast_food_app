@@ -1,11 +1,12 @@
-
-
 import 'package:fast_food_app/domain/entities/restaurant.dart';
 import 'package:fast_food_app/domain/repositories/restaurant_repository.dart';
 
-/// Implementação mock — lista fixa de restaurantes de exemplo em
-/// Maputo, só para termos algo no mapa/lista enquanto não há uma
-/// fonte real.
+/// Lista de restaurantes reais de Maputo (nomes e zonas confirmados
+/// por pesquisa). As coordenadas são uma aproximação da rua/zona
+/// indicada, não uma geocodificação exata — dá para testar
+/// pesquisa/distância/ordenação com dados verdadeiros, mas afina as
+/// coordenadas mais tarde se precisares de precisão ao nível do
+/// edifício (ou liga isto à Places API, quando fizer sentido).
 class RestauranteRepositoryImpl implements RestauranteRepository {
   @override
   Future<List<Restaurante>> listarRestaurantes() async {
@@ -14,43 +15,43 @@ class RestauranteRepositoryImpl implements RestauranteRepository {
     return const [
       Restaurante(
         id: '1',
-        nome: 'Chicken Zone',
-        morada: 'Av. Julius Nyerere, Maputo',
-        latitude: -25.9655,
-        longitude: 32.5892,
-        avaliacao: 4.3,
-        precoMedio: 250,
-        categorias: ['Frango'],
+        nome: 'Teka Famba Junta',
+        morada: 'R. Carlos Morgado, Maputo',
+        latitude: -25.9553,
+        longitude: 32.5758,
+        avaliacao: 4.2,
+        precoMedio: 280,
+        categorias: ['Hambúrgueres', 'Frango'],
       ),
       Restaurante(
         id: '2',
-        nome: 'Burger House',
-        morada: 'Av. 24 de Julho, Maputo',
-        latitude: -25.9689,
-        longitude: 32.5808,
-        avaliacao: 4.5,
-        precoMedio: 300,
-        categorias: ['Hambúrgueres'],
+        nome: 'Take Away Orca',
+        morada: 'Av. Eduardo Mondlane, Maputo',
+        latitude: -25.9682,
+        longitude: 32.5847,
+        avaliacao: 4.4,
+        precoMedio: 180,
+        categorias: ['Frango', 'Pregos'],
       ),
       Restaurante(
         id: '3',
-        nome: 'Pizza Rápida',
-        morada: 'Av. Eduardo Mondlane, Maputo',
-        latitude: -25.9720,
-        longitude: 32.5934,
-        avaliacao: 4.0,
-        precoMedio: 400,
-        categorias: ['Pizza'],
+        nome: 'KFC',
+        morada: 'Av. Vladimir Lenine, Maputo',
+        latitude: -25.9651,
+        longitude: 32.5801,
+        avaliacao: 3.4,
+        precoMedio: 320,
+        categorias: ['Frango'],
       ),
       Restaurante(
         id: '4',
-        nome: 'Fast Grill',
-        morada: 'Av. Vladimir Lenine, Maputo',
-        latitude: -25.9598,
-        longitude: 32.5735,
-        avaliacao: 3.9,
-        precoMedio: 200,
-        categorias: ['Grelhados', 'Pregos'],
+        nome: 'Debonairs Pizza',
+        morada: 'Baixa, Maputo',
+        latitude: -25.9701,
+        longitude: 32.5831,
+        avaliacao: 4.1,
+        precoMedio: 450,
+        categorias: ['Pizza'],
       ),
     ];
   }
